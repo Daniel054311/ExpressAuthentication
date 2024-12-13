@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { UserRole } from "../dto/dto.userRoles";
 
 export const registerSchema = Joi.object({
     email: Joi.string().email().required().messages({
@@ -9,8 +10,9 @@ export const registerSchema = Joi.object({
         'string.min': 'Password must be at least 8 characters long.',
         'any.required': 'Password is required.',
     }),
-    isAdmin: Joi.boolean().optional().messages({
-        'boolean.base': 'IsAdmin should be a boolean.',
+    userRole: Joi.string().valid(UserRole.ADMIN, UserRole.SELLER, UserRole.BUYER).required().messages({
+        'any.required': 'User role is required.',
+        'any.only': `User role must be one of ${UserRole.ADMIN}, ${UserRole.SELLER}, or ${UserRole.BUYER}.`,
     }),
     firstName: Joi.string()  
     .min(1)  

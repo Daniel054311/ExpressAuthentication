@@ -1,10 +1,7 @@
-import {Request, Response,NextFunction } from "express";
-import { verifyToken } from "../utils/jwt.util";
+import { NextFunction, Response } from "express";
+import { AuthenticatedRequest } from "../dto/types";
 import { User } from "../entities/users";
-
-interface AuthenticatedRequest extends Request {  
-    user?: User; 
-} 
+import { verifyToken } from "../utils/jwt.util";
 
 export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction):Promise<void> => {
     const token = req.headers.authorization?.split(' ')[1];

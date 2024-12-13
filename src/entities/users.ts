@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Product } from "./product";
+import { Role } from "./role";
 
 @Entity()
 export class User {
@@ -6,10 +8,10 @@ export class User {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ type: 'varchar', default: '' })
+    @Column({ type: 'varchar', length: 50 , default: '' })
     firstName: string;
 
-    @Column({ type: 'varchar', default: '' })
+    @Column({ type: 'varchar',  length: 50 , default: '' })
     lastName: string;
 
     @Column({ unique: true })
@@ -17,8 +19,17 @@ export class User {
     
     @Column()
     password: string;
+    
+    @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: false, onDelete: 'CASCADE' })
+    userRole: Role;
 
-    @Column({default: false})
-    isAdmin: boolean;
+    @CreateDateColumn({ type: "timestamp" })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: "timestamp" })
+    updatedAt: Date;
+
+    @OneToMany(() => Product, (product) => product.user,{nullable:false})
+    products: Product[];
     
 }
