@@ -48,3 +48,39 @@ export const loginSchema = Joi.object({
     })
 });
 
+
+export const productSchema = Joi.object({
+    name: Joi.string()
+        .max(100)
+        .required()
+        .messages({
+            'string.empty': 'Name is required.',
+            'string.max': 'Name cannot exceed 100 characters.',
+            'any.required': 'Name is required.',
+        }),
+
+    imageUrl: Joi.string()
+        .uri()
+        .required()
+        .messages({
+            'string.uri': 'Image URL must be a valid URL.',
+            'any.required': 'Image URL is required.',
+        }),
+
+    price: Joi.number()
+        .positive()
+        .required()
+        .messages({
+            'number.positive': 'Price must be a positive value.',
+            'any.required': 'Price is required.',
+        }),
+
+    description: Joi.string()
+        .required()
+        .messages({
+            'string.empty': 'Description is required.',
+            'any.required': 'Description is required.',
+        }),
+});
+
+
