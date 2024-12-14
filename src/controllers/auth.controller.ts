@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createUserRole, findUserByEmail, saveUser } from "../repository/user.repository";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
-import { generateRefreshToken, generateToken } from "../utils/jwt.util";
+import { generateToken, verifyToken } from "../utils/jwt.util";
 import { loginSchema, registerSchema } from "../utils/validation.util";
 
 
@@ -63,15 +63,20 @@ class AuthControllers {
                 return;
             }
 
-            const token = generateToken({ id: user.id, email: user.email }, "1m");
+            const token = generateToken({ id: user.id, email: user.email }, "1h");
        
 
-            const refreshToken = generateRefreshToken({ id: user.id, email: user.email }, "5d");
+            res.cookie("refreshToken", AuthControllers.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 3 * 24 * 60 * 60 * 1000,
+            });
+
         
             res.status(200).json({
                 message: "Login successful",
-                token,
-                refreshToken
+                token
             });
             return;
 
@@ -80,7 +85,31 @@ class AuthControllers {
         }
     }
 
+    static async refreshToken(req: Request, res: Response): Promise<void> {
+        const refreshToken = req.cookies.refreshToken;  
+        if (!refreshToken) {
+            res.sendStatus(401)
+            return 
+        };   
+        try {
+            const decoded = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET ??"");
+            const user = await findUserByEmail(decoded?.email);
+            if (!user ) {
+                res.status(401).json({ message: "Invalid or expired refresh token" });
+                return;
+            }
+            const newAccessToken = generateToken({ id: user.id, email: user.email }, "1h");
+            res.status(200).json({
+                message: "New access token issued",
+                token: newAccessToken,
+            });
+        } catch (error) {
+            res.status(401).json({ message: "Invalid or expired refresh token" });
+        }
+    }
+    
 
+  
 }
 
 export default AuthControllers;

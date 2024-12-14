@@ -12,7 +12,7 @@ export const generateRefreshToken = (payload: object, expiresIn: string = "3d"):
     return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn });
 };
 
-export const verifyToken = (token: string, secretKey: string = JWT_SECRET_KEY): JwtPayload | null => {
+export const verifyToken = (token: string, secretKey: string = JWT_SECRET_KEY ): JwtPayload | null => {
     try {
         const decoded = jwt.verify(token, secretKey);
         return typeof decoded === 'object' ? decoded  : null;
@@ -21,3 +21,4 @@ export const verifyToken = (token: string, secretKey: string = JWT_SECRET_KEY): 
         return null; 
     }
 };
+

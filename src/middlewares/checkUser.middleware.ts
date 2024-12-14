@@ -1,9 +1,8 @@
 
-import { Request, Response, NextFunction, RequestHandler } from "express";
-import {UserRole } from "../dto/dto.userRoles";
-import { User } from "../entities/users";
-import { findUserById } from "../repository/user.repository";
+import { NextFunction, Request, RequestHandler, Response } from "express";
+import { UserRole } from "../dto/dto.userRoles";
 import { AuthenticatedRequest } from "../dto/types";
+import { findUserById } from "../repository/user.repository";
 
 
 

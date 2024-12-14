@@ -31,10 +31,12 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/helmet": "^4.0.0",
     "@types/joi": "^17.2.3",
+    "@types/jsonwebtoken": "^9.0.7",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
