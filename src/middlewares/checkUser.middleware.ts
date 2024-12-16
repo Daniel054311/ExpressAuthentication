@@ -2,8 +2,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { UserRole } from "../dto/dto.userRoles";
 import { AuthenticatedRequest } from "../dto/types";
-import { findUserById } from "../repository/user.repository";
-
+import { findUserWithRoles } from "../repository/user.repository";
 
 
 export const checkUserRole = (allowedRoles: UserRole[]): RequestHandler => {
@@ -16,15 +15,15 @@ export const checkUserRole = (allowedRoles: UserRole[]): RequestHandler => {
                 return
             }
 
-            const user = await findUserById(userId);
+            const user = await findUserWithRoles(userId);
             if (!user) {
-                res.status(404).json({ message: "User not found" });
+                res.status(404).json({ message: "Invalid password or email" });
                 return
             }
 
-            const userRole = user.userRole.name; 
+            const userRole = user.role; 
 
-            if (!allowedRoles.includes(userRole as UserRole)) {
+            if (!allowedRoles.includes(userRole )) {
                 res.status(403).json({ message: "Forbidden: You do not have permission to access this resource." });
                 return;
             }

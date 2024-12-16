@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./users";
 
 @Entity()
@@ -13,7 +13,7 @@ export class Product {
     @Column()
     imageUrl: string;
 
-    @Column()
+    @Column( {type: "decimal"})
     price: number;
 
     @Column("text")
@@ -22,5 +22,11 @@ export class Product {
     @ManyToOne(() => User, (user) => user.products)
     @JoinColumn()
     user: User
+
+    @CreateDateColumn({ type: "timestamp" })
+    createdAt: Date;
+    
+    @UpdateDateColumn({ type: "timestamp" })
+    updatedAt: Date;
 
 }

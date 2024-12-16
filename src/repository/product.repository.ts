@@ -1,6 +1,6 @@
 import connectDB from "../data-source";
 import { Product } from "../entities/product";
-import { findUserById } from "./user.repository";
+import { findUserWithRoles } from "./user.repository";
 
 const productRepository = connectDB.getRepository(Product);
 
@@ -9,7 +9,7 @@ export const saveProduct = async (productData: Partial<Product>, userId: string)
         
         throw new Error("User ID is required to create a product");  
     }  
-    const user = await findUserById(userId);
+    const user = await findUserWithRoles(userId);
     if (!user) {
         throw new Error("User not found");
     }
@@ -17,11 +17,8 @@ export const saveProduct = async (productData: Partial<Product>, userId: string)
 };
 
 
-
-export const getAllProductsWithOwners = async (): Promise<Product[]> => {
-  return await productRepository.find({
-    relations: ["user"], 
-  });
+export const getAllProductsWithoutOwners = async (): Promise<Product[]> => {
+  return await productRepository.find();
 };
 
 export const findProductById = async (id: string): Promise<Product | null> => {
@@ -46,4 +43,14 @@ export const updateProductDetails = async (id: string, updatedFields: Partial<Pr
     }
     await productRepository.remove(product);
     return true; 
-  };
+};
+  
+export const getProductsByUserId = async (userId: string): Promise<Product[]> => {
+  const user = await findUserWithRoles(userId);
+  if (!user) {
+   console.log("User not found");
+  }
+  return await productRepository.find({
+    where: { user: { id: userId } }
+  });
+};

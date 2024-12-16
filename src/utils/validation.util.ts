@@ -10,7 +10,7 @@ export const registerSchema = Joi.object({
         'string.min': 'Password must be at least 8 characters long.',
         'any.required': 'Password is required.',
     }),
-    userRole: Joi.string().valid(UserRole.ADMIN, UserRole.SELLER, UserRole.BUYER).required().messages({
+    role: Joi.string().valid(UserRole.ADMIN, UserRole.SELLER, UserRole.BUYER).required().messages({
         'any.required': 'User role is required.',
         'any.only': `User role must be one of ${UserRole.ADMIN}, ${UserRole.SELLER}, or ${UserRole.BUYER}.`,
     }),

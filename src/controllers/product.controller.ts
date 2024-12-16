@@ -4,12 +4,13 @@ import { AuthenticatedRequest } from "../dto/types";
 import { Product } from "../entities/product";
 import {
   deleteProductById,
-  getAllProductsWithOwners,
+  getAllProductsWithoutOwners,
+  getProductsByUserId,
   saveProduct,
   updateProductDetails,
 } from "../repository/product.repository";
-import { findUserById } from "../repository/user.repository";
 import { productSchema } from "../utils/validation.util";
+import { findUserWithRoles } from "../repository/user.repository";
 
 class ProductControllers {
   static async createProduct(req: Request, res: Response): Promise<void> {
@@ -37,7 +38,18 @@ class ProductControllers {
 
   static async getAllProducts(req: Request, res: Response): Promise<void> {
     try {
-      const products = await getAllProductsWithOwners();
+      const products = await getAllProductsWithoutOwners();
+      res.status(200).json(products);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  static async getAUserProducts(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as AuthenticatedRequest).user?.id;
+      const products = await getProductsByUserId(userId as string);
       res.status(200).json(products);
     } catch (error) {
       console.log(error);
@@ -74,7 +86,7 @@ class ProductControllers {
         return;
       }
 
-      await findUserById(userId);
+      await findUserWithRoles(userId);
 
       await updateProductDetails(id, req.body);
       if (!id) {
@@ -101,7 +113,7 @@ class ProductControllers {
         return;
       }
 
-      await findUserById(userId);
+      await findUserWithRoles(userId);
 
       const isDeleted = await deleteProductById(id);
       if (!isDeleted) {

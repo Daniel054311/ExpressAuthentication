@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 const app = express();
 const port = process.env.PORT ?? 3000;
 
-connectDB
+connectDB;
 
 app.use(errorHandler);
 app.use(cookieParser()); 

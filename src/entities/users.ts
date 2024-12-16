@@ -1,6 +1,6 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { UserRole } from "../dto/dto.userRoles";
 import { Product } from "./product";
-import { Role } from "./role";
 
 @Entity()
 export class User {
@@ -17,11 +17,13 @@ export class User {
     @Column({ unique: true })
     email: string;
     
+    
     @Column()
     password: string;
     
-    @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: false, onDelete: 'CASCADE' })
-    userRole: Role;
+    @Column({ type: 'enum', enum: UserRole, default: UserRole.BUYER })
+    role: UserRole;
+    
 
     @CreateDateColumn({ type: "timestamp" })
     createdAt: Date;
