@@ -31,7 +31,7 @@ export class User {
     @UpdateDateColumn({ type: "timestamp" })
     updatedAt: Date;
 
-    @OneToMany(() => Product, (product) => product.user,{nullable:false})
+    @OneToMany(() => Product, (product) => product.user)
     products: Product[];
     
 }

@@ -21,17 +21,12 @@ class ProductControllers {
         return;
       }
 
-      const { description, price, imageUrl, name } = req.body;
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as AuthenticatedRequest).user.id;
 
-      await saveProduct(
-        { description, price, imageUrl, name },
-        userId as string
-      );
+      await saveProduct(req.body, userId);
       res.status(201).json({ message: "Product created successfully" });
       return;
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -41,18 +36,16 @@ class ProductControllers {
       const products = await getAllProductsWithoutOwners();
       res.status(200).json(products);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
 
   static async getAUserProducts(req: Request, res: Response): Promise<void> {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
-      const products = await getProductsByUserId(userId as string);
+      const userId = (req as AuthenticatedRequest).user.id;
+      const products = await getProductsByUserId(userId);
       res.status(200).json(products);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -68,7 +61,6 @@ class ProductControllers {
       }
       res.status(200).json(product);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -76,15 +68,7 @@ class ProductControllers {
   static async updateProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      console.log(req);
-      const userId = (req as AuthenticatedRequest).user?.id;
-
-      if (!userId) {
-        res
-          .status(401)
-          .json({ message: "Unauthorized: You are not logged in" });
-        return;
-      }
+      const userId = (req as AuthenticatedRequest).user.id;
 
       await findUserWithRoles(userId);
 
@@ -104,14 +88,7 @@ class ProductControllers {
   static async deleteProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const userId = (req as AuthenticatedRequest).user?.id;
-
-      if (!userId) {
-        res
-          .status(401)
-          .json({ message: "Unauthorized: You are not logged in" });
-        return;
-      }
+      const userId = (req as AuthenticatedRequest).user.id;
 
       await findUserWithRoles(userId);
 
@@ -122,7 +99,6 @@ class ProductControllers {
       }
       res.status(200).json({ message: "Product deleted" });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

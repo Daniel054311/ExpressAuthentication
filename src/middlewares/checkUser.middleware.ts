@@ -9,9 +9,9 @@ export const checkUserRole = (allowedRoles: UserRole[]): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             const userId = (req as AuthenticatedRequest).user?.id; 
-            console.log(userId)
+    
             if (!userId) {
-                res.status(401).json({ message: "Unauthorized: User ID is required" });
+                res.status(401).json({ message: "Unauthorized" });
                 return
             }
 

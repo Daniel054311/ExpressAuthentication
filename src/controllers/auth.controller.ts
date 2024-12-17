@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../dto/types";
 import {
   findUserByEmail,
   saveUser,
 } from "../repository/user.repository";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
-import { generateToken, verifyToken } from "../utils/jwt.util";
-import { loginSchema, registerSchema } from "../utils/validation.util";
+import { generateToken } from "../utils/jwt.util";
 import { omitFields } from "../utils/omit.utils";
+import { loginSchema, registerSchema } from "../utils/validation.util";
 
 class AuthControllers {
   static async register(req: Request, res: Response): Promise<void> {
@@ -17,21 +18,18 @@ class AuthControllers {
         return;
       }
 
-      const { email, password, firstName, lastName, role } = req.body;
+      const { email, password } = req.body;
 
       if (await findUserByEmail(email)) {
-        res.status(409).json({ message: "User already exists" });
+        res.status(409).json({ message: "This account already exists" });
         return;
       }
 
       const hashedPassword = await hashPassword(password);
 
       await saveUser({
-        email,
+        ...req.body,
         password: hashedPassword,
-        firstName,
-        lastName,
-        role,
       });
 
       res.status(201).json({ message: "User registered successfully" });
@@ -63,14 +61,8 @@ class AuthControllers {
         return;
       }
 
-      const token = generateToken({ id: user.id, email: user.email }, "10m");
-
-      res.cookie("refreshToken", AuthControllers.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 3 * 24 * 60 * 60 * 1000,
-      });
+      const token = generateToken({ id: user.id, email: user.email });
+      
 
       const userWithoutPassword = omitFields(user, ["password"]);
 
@@ -86,25 +78,16 @@ class AuthControllers {
   }
 
   static async refreshToken(req: Request, res: Response): Promise<void> {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      res.sendStatus(401);
-      return;
-    }
     try {
-      const decoded = verifyToken(
-        refreshToken,
-        process.env.JWT_REFRESH_SECRET ?? ""
-      );
-      const user = await findUserByEmail(decoded?.email);
+      const email = (req as AuthenticatedRequest).user.email;
+      
+      const user = await findUserByEmail(email);
       if (!user) {
         res.status(401).json({ message: "Invalid or expired refresh token" });
         return;
       }
       const newAccessToken = generateToken(
-        { id: user.id, email: user.email },
-        "1h"
-      );
+        { id: user.id, email: user.email }    );
       res.status(200).json({
         message: "New access token issued",
         token: newAccessToken,
