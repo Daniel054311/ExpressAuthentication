@@ -9,12 +9,13 @@ import {
   saveProduct,
   updateProductDetails,
 } from "../repository/product.repository";
-import { productSchema } from "../utils/validation.util";
 import { findUserWithRoles } from "../repository/user.repository";
+import { productSchema } from "../utils/validation.util";
 
 class ProductControllers {
   static async createProduct(req: Request, res: Response): Promise<void> {
     try {
+      const customReq = req as AuthenticatedRequest; 
       const { error } = productSchema.validate(req.body);
       if (error) {
         res.status(400).json({ message: error.details[0].message });
@@ -22,11 +23,10 @@ class ProductControllers {
       }
 
       const { description, price, imageUrl, name } = req.body;
-      const userId = (req as AuthenticatedRequest).user?.id;
-
+      const userId = customReq.user.id;
       await saveProduct(
         { description, price, imageUrl, name },
-        userId as string
+        userId 
       );
       res.status(201).json({ message: "Product created successfully" });
       return;
@@ -48,8 +48,11 @@ class ProductControllers {
 
   static async getAUserProducts(req: Request, res: Response): Promise<void> {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
-      const products = await getProductsByUserId(userId as string);
+      const customReq = req as AuthenticatedRequest; 
+
+      const userId = customReq.user.id;
+
+      const products = await getProductsByUserId(userId);
       res.status(200).json(products);
     } catch (error) {
       console.log(error);
@@ -76,9 +79,7 @@ class ProductControllers {
   static async updateProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      console.log(req);
-      const userId = (req as AuthenticatedRequest).user?.id;
-
+      const userId = (req as AuthenticatedRequest).user.id; //create a middleware for it 
       if (!userId) {
         res
           .status(401)
@@ -96,7 +97,6 @@ class ProductControllers {
 
       res.status(201).json({ message: "Product updated successfully" });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -104,7 +104,7 @@ class ProductControllers {
   static async deleteProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = (req as AuthenticatedRequest).user.id;
 
       if (!userId) {
         res
@@ -122,7 +122,6 @@ class ProductControllers {
       }
       res.status(200).json({ message: "Product deleted" });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }

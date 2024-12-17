@@ -1,8 +1,8 @@
 import { Router } from "express";
 import ProductControllers from "../controllers/product.controller";
 import { UserRole } from "../dto/dto.userRoles";
-import { checkUserRole } from "../middlewares/checkUser.middleware";
 import { authenticate } from "../middlewares/authenticate.middleware";
+import { checkUserRole } from "../middlewares/checkUser.middleware";
 
 const productRouter = Router();
 

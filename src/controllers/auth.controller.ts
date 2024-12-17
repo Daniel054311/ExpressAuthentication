@@ -4,9 +4,9 @@ import {
   saveUser,
 } from "../repository/user.repository";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
-import { generateToken, verifyToken } from "../utils/jwt.util";
-import { loginSchema, registerSchema } from "../utils/validation.util";
+import { generateToken } from "../utils/jwt.util";
 import { omitFields } from "../utils/omit.utils";
+import { loginSchema, registerSchema } from "../utils/validation.util";
 
 class AuthControllers {
   static async register(req: Request, res: Response): Promise<void> {
@@ -25,7 +25,7 @@ class AuthControllers {
       }
 
       const hashedPassword = await hashPassword(password);
-
+// consider cleaning the object by speading and updating the password
       await saveUser({
         email,
         password: hashedPassword,
@@ -63,7 +63,7 @@ class AuthControllers {
         return;
       }
 
-      const token = generateToken({ id: user.id, email: user.email }, "10m");
+      const token = generateToken({ id: user.id, email: user.email }, "3m");//consider adding the token to the environment variable
 
       res.cookie("refreshToken", AuthControllers.refreshToken, {
         httpOnly: true,
@@ -72,7 +72,7 @@ class AuthControllers {
         maxAge: 3 * 24 * 60 * 60 * 1000,
       });
 
-      const userWithoutPassword = omitFields(user, ["password"]);
+      const userWithoutPassword = omitFields(user, ["password"]);//change the name of the onject to omitkeys
 
       res.status(200).json({
         message: "Login successful",
@@ -86,27 +86,20 @@ class AuthControllers {
   }
 
   static async refreshToken(req: Request, res: Response): Promise<void> {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      res.sendStatus(401);
-      return;
-    }
+   
     try {
-      const decoded = verifyToken(
-        refreshToken,
-        process.env.JWT_REFRESH_SECRET ?? ""
-      );
-      const user = await findUserByEmail(decoded?.email);
+      const  {email}  = req.body;
+      const user = await findUserByEmail(email);
       if (!user) {
         res.status(401).json({ message: "Invalid or expired refresh token" });
         return;
       }
       const newAccessToken = generateToken(
         { id: user.id, email: user.email },
-        "1h"
+        "1h" //make the expiry a vairiable in the env
       );
+
       res.status(200).json({
-        message: "New access token issued",
         token: newAccessToken,
       });
     } catch (error) {

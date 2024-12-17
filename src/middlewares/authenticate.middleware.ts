@@ -1,9 +1,9 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../dto/types";
 import { User } from "../entities/users";
 import { verifyToken } from "../utils/jwt.util";
 
-export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction):Promise<void> => {
+export const authenticate = async (req:Request, res: Response, next: NextFunction):Promise<void> => {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) { 
@@ -18,6 +18,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
         return;
     }
     
-    req.user = decodedToken as User; 
+    (req as AuthenticatedRequest).user = decodedToken as User; 
+    // req.user = decodedToken as User; 
     next(); 
 };
