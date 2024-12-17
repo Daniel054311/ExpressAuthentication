@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../dto/types";
 import {
   findUserByEmail,
   saveUser,
@@ -17,21 +18,18 @@ class AuthControllers {
         return;
       }
 
-      const { email, password, firstName, lastName, role } = req.body;
+      const { email, password } = req.body;
 
       if (await findUserByEmail(email)) {
-        res.status(409).json({ message: "User already exists" });
+        res.status(409).json({ message: "This account already exists" });
         return;
       }
 
       const hashedPassword = await hashPassword(password);
-// consider cleaning the object by speading and updating the password
+
       await saveUser({
-        email,
+        ...req.body,
         password: hashedPassword,
-        firstName,
-        lastName,
-        role,
       });
 
       res.status(201).json({ message: "User registered successfully" });
@@ -63,16 +61,10 @@ class AuthControllers {
         return;
       }
 
-      const token = generateToken({ id: user.id, email: user.email }, "3m");//consider adding the token to the environment variable
+      const token = generateToken({ id: user.id, email: user.email });
+      
 
-      res.cookie("refreshToken", AuthControllers.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 3 * 24 * 60 * 60 * 1000,
-      });
-
-      const userWithoutPassword = omitFields(user, ["password"]);//change the name of the onject to omitkeys
+      const userWithoutPassword = omitFields(user, ["password"]);
 
       res.status(200).json({
         message: "Login successful",
@@ -86,20 +78,18 @@ class AuthControllers {
   }
 
   static async refreshToken(req: Request, res: Response): Promise<void> {
-   
     try {
-      const  {email}  = req.body;
+      const email = (req as AuthenticatedRequest).user.email;
+      
       const user = await findUserByEmail(email);
       if (!user) {
         res.status(401).json({ message: "Invalid or expired refresh token" });
         return;
       }
       const newAccessToken = generateToken(
-        { id: user.id, email: user.email },
-        "1h" //make the expiry a vairiable in the env
-      );
-
+        { id: user.id, email: user.email }    );
       res.status(200).json({
+        message: "New access token issued",
         token: newAccessToken,
       });
     } catch (error) {

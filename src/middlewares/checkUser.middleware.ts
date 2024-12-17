@@ -1,16 +1,17 @@
 
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { UserRole } from "../dto/dto.userRoles";
-import { findUserWithRoles } from "../repository/user.repository";
 import { AuthenticatedRequest } from "../dto/types";
+import { findUserWithRoles } from "../repository/user.repository";
 
 
 export const checkUserRole = (allowedRoles: UserRole[]): RequestHandler => {
-    return async (req:Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const userId = (req as AuthenticatedRequest).user.id; 
+            const userId = (req as AuthenticatedRequest).user?.id; 
+    
             if (!userId) {
-                res.status(401).json({ message: "Unauthorized: User ID is required" }); //consider the message for secuirty reason 
+                res.status(401).json({ message: "Unauthorized" });
                 return
             }
 

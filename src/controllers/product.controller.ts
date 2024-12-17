@@ -9,29 +9,24 @@ import {
   saveProduct,
   updateProductDetails,
 } from "../repository/product.repository";
-import { findUserWithRoles } from "../repository/user.repository";
 import { productSchema } from "../utils/validation.util";
+import { findUserWithRoles } from "../repository/user.repository";
 
 class ProductControllers {
   static async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      const customReq = req as AuthenticatedRequest; 
       const { error } = productSchema.validate(req.body);
       if (error) {
         res.status(400).json({ message: error.details[0].message });
         return;
       }
 
-      const { description, price, imageUrl, name } = req.body;
-      const userId = customReq.user.id;
-      await saveProduct(
-        { description, price, imageUrl, name },
-        userId 
-      );
+      const userId = (req as AuthenticatedRequest).user.id;
+
+      await saveProduct(req.body, userId);
       res.status(201).json({ message: "Product created successfully" });
       return;
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -41,21 +36,16 @@ class ProductControllers {
       const products = await getAllProductsWithoutOwners();
       res.status(200).json(products);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
 
   static async getAUserProducts(req: Request, res: Response): Promise<void> {
     try {
-      const customReq = req as AuthenticatedRequest; 
-
-      const userId = customReq.user.id;
-
+      const userId = (req as AuthenticatedRequest).user.id;
       const products = await getProductsByUserId(userId);
       res.status(200).json(products);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -71,7 +61,6 @@ class ProductControllers {
       }
       res.status(200).json(product);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -79,13 +68,7 @@ class ProductControllers {
   static async updateProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const userId = (req as AuthenticatedRequest).user.id; //create a middleware for it 
-      if (!userId) {
-        res
-          .status(401)
-          .json({ message: "Unauthorized: You are not logged in" });
-        return;
-      }
+      const userId = (req as AuthenticatedRequest).user.id;
 
       await findUserWithRoles(userId);
 
@@ -97,6 +80,7 @@ class ProductControllers {
 
       res.status(201).json({ message: "Product updated successfully" });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -105,13 +89,6 @@ class ProductControllers {
     try {
       const { id } = req.params;
       const userId = (req as AuthenticatedRequest).user.id;
-
-      if (!userId) {
-        res
-          .status(401)
-          .json({ message: "Unauthorized: You are not logged in" });
-        return;
-      }
 
       await findUserWithRoles(userId);
 
