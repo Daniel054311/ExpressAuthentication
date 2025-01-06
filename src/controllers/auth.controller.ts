@@ -5,7 +5,7 @@ import {
   saveUser,
 } from "../repository/user.repository";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
-import { generateToken } from "../utils/jwt.util";
+import { generateRefreshToken, generateToken } from "../utils/jwt.util";
 import { omitFields } from "../utils/omit.utils";
 import { loginSchema, registerSchema } from "../utils/validation.util";
 
@@ -86,7 +86,7 @@ class AuthControllers {
         res.status(401).json({ message: "Invalid or expired refresh token" });
         return;
       }
-      const newAccessToken = generateToken(
+      const newAccessToken = generateRefreshToken(
         { id: user.id, email: user.email }    );
       res.status(200).json({
         message: "New access token issued",

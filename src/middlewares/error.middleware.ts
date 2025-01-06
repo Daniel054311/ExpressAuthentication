@@ -1,10 +1,9 @@
 
 import { Request, Response, NextFunction } from "express";
+import { CustomError } from "../dto/types";
 
 
-interface CustomError extends Error {  
-    status?: number;  
-} 
+
 
 export const errorHandler = (err:CustomError, req:Request, res:Response, next:NextFunction) => {
     const status = err.status ?? 500;
